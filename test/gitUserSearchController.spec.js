@@ -3,15 +3,27 @@ describe('GitUserSearchController', function() {
 
   var ctrl;
 
-  beforeEach(inject(function($controller) {
+  beforeEach(inject(function($controller, $rootScope) {
     ctrl = $controller('GitUserSearchController');
   }));
 
   it('initialises with an empty search result and term', function() {
     expect(ctrl.searchTerm).toBeUndefined();
+    expect(ctrl.searchResult).toBeUndefined();
   });
 
   describe('when searching for a user', function() {
+
+    var httpBackend;
+
+    beforeEach(inject(function($httpBackend) {
+      httpBackend = $httpBackend;
+      httpBackend
+      .when("GET", "https://api.github.com/search/users?q=roidriscoll")
+      .respond(
+        { items: items }
+      );
+    }));
 
     var items = [
       {
@@ -27,9 +39,10 @@ describe('GitUserSearchController', function() {
       ];
 
       it('displays search results', function() {
-        console.log("here be the searchResult console log: " + ctrl.searchResult.items[0]["login"]);
-        console.log("here be the console log: " + items[0]["login"]);
-        expect(ctrl.searchResult.items[0]["login"]).toEqual(items[0]["login"]);
+        ctrl.searchTerm = "roidriscoll";
+        ctrl.doSearch();
+        httpBackend.flush();
+        expect(ctrl.searchResult.items).toEqual(items);
       });
     });
   });
